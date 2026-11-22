@@ -1,0 +1,5 @@
+# ninja log v7
+16	2097	8170710669171480	CMakeFiles/assetlib.dir/src/archive.cpp.obj	6b0d97049773af70
+23	2178	8170710669251919	CMakeFiles/asset_bench.dir/bench/bench.cpp.obj	bc1270306de6bcf0
+2123	2200	8170710690246095	assetlib.lib	ec892b0410817f5d
+2200	2531	8170710691016117	asset_bench.exe	c7509b4259c47555
