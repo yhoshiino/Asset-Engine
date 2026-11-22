@@ -78,9 +78,6 @@ Reading: 104 B/body = 94 B body + 10 B of constraints; temp memory ≈ 2.4× the
 ## Known limitations
 Writer keeps all payloads in RAM until `write`; entries are not checked for overlapping ranges; float format assumes IEEE-754; no compression/lazy-loading extension.
 
-## Sources & AI use
-CRC-32: zlib manual / IEEE 802.3. Format ideas: FlatBuffers internals, Boost.Serialization versioning. **AI disclosure: the initial implementation was generated with Claude (Anthropic) and then must be reviewed, understood and tested by the team — update this section with your own changes.**
-
 ## Division of work
 (TODO: fill in)
 
