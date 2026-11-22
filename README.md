@@ -78,9 +78,6 @@ Reading: 104 B/body = 94 B body + 10 B of constraints; temp memory ≈ 2.4× the
 ## Known limitations
 Writer keeps all payloads in RAM until `write`; entries are not checked for overlapping ranges; float format assumes IEEE-754; no compression/lazy-loading extension.
 
-## Division of work
-(TODO: fill in)
-
 ## Scene adapter tests (`scene_tests.cpp`)
 Mesh/texture round-trip (empty mesh, inconsistent faces, out-of-range index), full scene round-trip with shared assets stored once and a different component registration order, null pointers, only referenced assets saved, `ReplaceAll`, `IntoEmpty` on a non-empty ECS, failures leaving the ECS untouched (bad material, missing asset, over capacity; exactly 99 entities accepted), crafted payloads with a *valid CRC* (bad indices, huge counts, 16384x16384 texture claimed in 8 bytes, duplicate/zero entity id, NaN, scale 0, pitch out of range), truncation at every length and an altered byte at every position.
 Note: these were developed against copies of the engine headers (with `stb_image` stubbed); run them once against the real repo.
