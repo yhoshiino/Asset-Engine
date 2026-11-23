@@ -88,4 +88,44 @@ Sources: CRC-32 — zlib manual / IEEE 802.3 (own implementation, no checksum li
 TODO (us): list what we reviewed, modified and tested ourselves, which suggestions we rejected or corrected, and the issues we found in the AI's output.
 
 ## Division of work
-TODO (us): who did what (core / adapters / tests / measurements / README), with the partner's name.
+
+Two developers, **Tarik** and **Nicolas**. The split follows the layers of the library. The contract between the two sides is the `Codec<T>` interface and the binary format section of this README, so Nicolas could write adapters while Tarik was still hardening the core.
+
+### Tarik — the core (format, validation, general-purpose types)
+- `include/asset/byte_io.hpp`, `include/asset/crc32.hpp`: byte access, little-endian, UTF-8, bounds checks, CRC-32
+- `include/asset/archive.hpp`, `src/archive.cpp`: header, directory, checksums, validation, `Codec<T>` interface
+- `include/asset/adapters/general.hpp`: `Person` (v1→v2 migration) and `Playlist`
+- `demo/main.cpp`: `write`, `list` and `load` for the general-purpose types
+- `tests/tests.cpp` (core part): primitives, round-trips, truncation, altered byte, hostile sizes, duplicates, payload layout, write failure
+- `data/general_v1.asen`, `data/general_v2.asen`
+- `CMakeLists.txt`: library, core tests, demo
+- README: format, API, checksum, versioning, validation
+
+### Nicolas — everything built on the core (adapters, engine, measurements)
+- `include/asset/adapters/physics.hpp`: `World`, `Snapshot`, conventions, reference validation
+- `include/asset/adapters/scene3d.hpp`: Mesh, Texture and ECS scene of Moteur3DCPU
+- `demo/scene_demo.cpp`, `tests/scene_tests.cpp`, `third_party/moteur3d/header/`
+- `tests/tests.cpp` (physics part): scene round-trip, snapshot, world replacement, rejection without partial state
+- `demo/main.cpp` (`World` branch that produces `data/scene.asen`)
+- `data/scene.asen`, `data/scene3d_demo.asen`
+- `bench/bench.cpp` and measurements
+- `CMakeLists.txt`: scene and bench targets
+- README: engine integration, physics conventions, measurements
+
+### Shared
+Cross-review: each of us reviewed the other's files before merging (details below). `.gitignore` and `.gitattributes` were set up together.
+
+**Integration.** Tarik first fixed the format and the `Codec<T>` interface, then Nicolas built the adapters against it. Each area was merged through a short-lived branch, and `ctest` had to pass before every merge.
+
+**Reviews.**
+- Core (Tarik's code, reviewed by Nicolas): payloads were not checked for gaps or overlaps, so the claim that every byte is covered by a checksum was stronger than the code. `ArchiveReader` now enforces contiguity, and a test crafts overlapping and gapped directories with a recomputed footer CRC.
+- Physics adapter and benchmark (Nicolas's code, reviewed by Tarik): the benchmark showed a save peak of 2.4× the payload (24.6 MiB for 100 000 bodies). The cause was `vector` doubling its capacity, with the old and new buffers coexisting. `writeWorld` now reserves the exact size, and the peak is ≈ 1× the payload (9.9 MiB).
+- Build: `/utf-8` was added for MSVC because the tests contain UTF-8 literals.
+
+**Blockers and scope changes.**
+- Moteur3DCPU has no physics solver (its only "physics" components are `Velocity` and `Spin`). Nicolas therefore integrated the archive with the real ECS scene, as the brief allows for an incomplete engine, and demonstrated the full physics data shape (mass, inertia, colliders, gravity, timestep, constraints) on stand-in structs in `physics.hpp`.
+- The scene adapter needs the engine headers. They are vendored under `third_party/moteur3d/header`, so the library, core tests and demo build without the engine, and the scene targets are enabled automatically when the headers are present.
+
+**Blockers and scope changes.**
+- Moteur3DCPU has no physics solver (its only "physics" components are `Velocity` and `Spin`). We therefore integrated the archive with the real ECS scene, as the brief allows for an incomplete engine, and demonstrated the full physics data shape (mass, inertia, colliders, gravity, timestep, constraints) on stand-in structs in `physics.hpp`.
+- The scene adapter needs the engine headers. We vendored them under `third_party/moteur3d/header`, so the library, core tests and demo build without the engine, and the scene targets are enabled automatically when the headers are present.
