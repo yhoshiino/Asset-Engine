@@ -127,7 +127,7 @@ Sources: CRC-32 — zlib manual / IEEE 802.3 (own implementation, no checksum li
 
 **AI Assistance:** Claude (Anthropic) was used as a development assistant to accelerate boilerplate implementation (adapters, unit tests, benchmark scaffolding, and initial documentation drafts) based on our architectural specifications and the Moteur3DCPU source code. It also assisted in debugging edge cases during development (such as a zero-length read issue with gcount() and a 4-byte reservation offset).
 
-**What we did with the AI output:** we built it, ran the tests (also under ASan/UBSan) and the benchmark, and reviewed the files. Review found and fixed: payload contiguity was not enforced (the "every byte covered" claim was stronger than the code), the save-time memory peak came from `vector` growth rather than from the copies the first draft blamed (fixed with an exact `reserve`, measured before/after), and the README measurements had to be re-checked on our own build. Review suggestions we did not implement are listed under Known limitations.
+**Verification & Manual Refinements:** we built it, ran the tests (also under ASan/UBSan) and the benchmark, and reviewed the files. Review found and fixed: payload contiguity was not enforced (the "every byte covered" claim was stronger than the code), the save-time memory peak came from `vector` growth rather than from the copies the first draft blamed (fixed with an exact `reserve`, measured before/after), and the README measurements had to be re-checked on our own build. Review suggestions we did not implement are listed under Known limitations.
 
 ## Division of work
 
