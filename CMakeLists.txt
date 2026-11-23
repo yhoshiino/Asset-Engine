@@ -10,7 +10,7 @@ endif()
 add_library(assetlib STATIC src/archive.cpp)
 target_include_directories(assetlib PUBLIC include)
 if(MSVC)
-  target_compile_options(assetlib PUBLIC /W4)
+  target_compile_options(assetlib PUBLIC /W4 /utf-8)   # /utf-8: tests contain UTF-8 string literals
 else()
   target_compile_options(assetlib PUBLIC -Wall -Wextra -Wpedantic)
 endif()
@@ -28,6 +28,9 @@ add_test(NAME asset_tests COMMAND asset_tests)
 # Moteur3DCPU scene adapter: needs <Moteur3DCPU>/header (vec.h, obj.h, texture.h, ecs/, components/, stb_image.h)
 #   cmake -S . -B build -DMOTEUR3D_HEADERS=/path/to/Moteur3DCPU/header
 set(MOTEUR3D_HEADERS "" CACHE PATH "Path to Moteur3DCPU/header (enables scene adapter tests and demo)")
+if(NOT MOTEUR3D_HEADERS AND EXISTS "${CMAKE_SOURCE_DIR}/third_party/moteur3d/header")
+  set(MOTEUR3D_HEADERS "${CMAKE_SOURCE_DIR}/third_party/moteur3d/header")   # vendored copy of the engine headers
+endif()
 if(MOTEUR3D_HEADERS)
   add_executable(asset_scene_tests tests/scene_tests.cpp)
   target_link_libraries(asset_scene_tests PRIVATE assetlib)

@@ -17,6 +17,7 @@ static void fixFooter(std::string& s, size_t nEntries) {   // recompute the foot
     uint32_t c = crc32(std::span<const uint8_t>(d + dirStart, nEntries * kEntrySize), crc32(std::span<const uint8_t>(d, kHeaderSize)));
     for (int i = 0; i < 4; ++i) s[s.size() - 4 + i] = static_cast<char>(c >> (8 * i));
 }
+static uint64_t get64(const std::string& s, size_t pos) { uint64_t v = 0; for (int i = 7; i >= 0; --i) v = (v << 8) | static_cast<uint8_t>(s[pos + i]); return v; }
 static void put64(std::string& s, size_t pos, uint64_t v) { for (int i = 0; i < 8; ++i) s[pos + i] = static_cast<char>(v >> (8 * i)); }
 
 static World makeWorld() {
@@ -133,6 +134,15 @@ int main() {
         std::string b = toBytes(aw2); size_t dir = b.size() - kFooterSize - 2 * kEntrySize;
         put64(b, dir + kEntrySize, 1); fixFooter(b, 2);                      // second id := first id
         std::istringstream is(b); CHECK(throwsCode([&] { ArchiveReader x(is); }, Err::Duplicate));
+    }
+    // --- payload layout: overlapping or gapped entries are rejected (so 'every byte is covered' is enforced, not assumed)
+    {
+        ArchiveWriter aw; aw.add(1, Person{"a", 1, 1}); aw.add(2, Person{"b", 2, 2});
+        std::string good = toBytes(aw); size_t dir = good.size() - kFooterSize - 2 * kEntrySize; size_t off2 = dir + kEntrySize + 8 + 4 + 2 + 2;
+        std::string overlap = good; put64(overlap, off2, kHeaderSize); fixFooter(overlap, 2);
+        std::istringstream is1(overlap); CHECK(throwsCode([&] { ArchiveReader x(is1); }, Err::BadOffset));
+        std::string gap = good; put64(gap, off2, get64(good, off2) + 1); fixFooter(gap, 2);
+        std::istringstream is2(gap); CHECK(throwsCode([&] { ArchiveReader x(is2); }, Err::BadOffset));
     }
     // --- physics: scene round trip, snapshot, replace world, rejection without partial state
     {

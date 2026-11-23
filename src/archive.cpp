@@ -96,6 +96,7 @@ ArchiveReader::ArchiveReader(std::istream& is) : is_(is) {
 
     ByteReader d(dirBytes);
     entries_.reserve(count);
+    uint64_t cursor = kHeaderSize;                  // payloads must be contiguous and in directory order
     for (uint32_t i = 0; i < count; ++i) {
         Entry e;
         e.id = d.u64(); e.type = d.u32(); e.schema = d.u16();
@@ -105,9 +106,12 @@ ArchiveReader::ArchiveReader(std::istream& is) : is_(is) {
         if (e.schema == 0) throw ArchiveError(Err::UnsupportedVersion, "entry with schema 0");
         if (e.offset < kHeaderSize || e.offset > dirOff || e.size > dirOff - e.offset)   // overflow-safe form
             throw ArchiveError(Err::BadOffset, "entry range outside payload area");
+        if (e.offset != cursor) throw ArchiveError(Err::BadOffset, "payloads overlap or leave a gap");
+        cursor += e.size;
         if (!index_.emplace(e.id, entries_.size()).second) throw ArchiveError(Err::Duplicate, "duplicate asset id in directory");
         entries_.push_back(e);
     }
+    if (cursor != dirOff) throw ArchiveError(Err::BadOffset, "payload area not fully described by the directory");
 }
 
 const Entry* ArchiveReader::find(uint64_t id) const {

@@ -52,6 +52,7 @@ template <> struct Codec<Mesh> {
     static void write(ByteWriter& w, const Mesh& m) {
         if (m.faces.size() % 3 != 0 || m.face_uvs.size() != m.faces.size())
             throw ArchiveError(Err::BadValue, "mesh: inconsistent face arrays");
+        w.reserve(12 + m.verts.size() * 12 + m.uvs.size() * 8 + m.faces.size() * 8);
         w.count(m.verts.size());
         for (const vec3& v : m.verts) detail3d::wV3(w, v);
         w.count(m.uvs.size());

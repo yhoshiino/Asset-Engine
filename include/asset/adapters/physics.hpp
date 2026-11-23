@@ -56,7 +56,10 @@ using namespace physics;
 inline void wVec(ByteWriter& w, Vec3 v) { w.f32(v.x); w.f32(v.y); w.f32(v.z); }
 inline Vec3 rVec(ByteReader& r) { Vec3 v; v.x = r.f32Finite(); v.y = r.f32Finite(); v.z = r.f32Finite(); return v; }
 
+constexpr size_t kBodyBytes = 8 + 1 + 12 + 16 + 4 + 12 + 12 + 12 + 1 + 4 + 12;   // = 94
+constexpr size_t kConstraintBytes = 8 + 8 + 4;                                    // = 20
 inline void writeWorld(ByteWriter& w, const World& world) {
+    w.reserve(w.bytes().size() + 24 + world.bodies.size() * kBodyBytes + world.constraints.size() * kConstraintBytes);   // one allocation, no doubling
     wVec(w, world.gravity);
     w.f32(world.fixedTimestep);
     w.count(world.bodies.size());
@@ -72,8 +75,6 @@ inline void writeWorld(ByteWriter& w, const World& world) {
     for (const Constraint& c : world.constraints) { w.u64(c.bodyA); w.u64(c.bodyB); w.f32(c.restLength); }
 }
 
-constexpr size_t kBodyBytes = 8 + 1 + 12 + 16 + 4 + 12 + 12 + 12 + 1 + 4 + 12;   // = 94
-constexpr size_t kConstraintBytes = 8 + 8 + 4;                                    // = 20
 
 inline World readWorld(ByteReader& r) {
     World world;
