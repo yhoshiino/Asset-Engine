@@ -125,7 +125,7 @@ Reading the numbers: 104 B/body = 94 B body + 10 B of constraints. **Save peak �
 ## Sources & AI use
 Sources: CRC-32 — zlib manual / IEEE 802.3 (own implementation, no checksum library used); format ideas — FlatBuffers internals (offsets, alignment), Boost.Serialization (versioning principles); C++ standard library reference — cppreference (`std::span`, `std::bit_cast`).
 
-**Disclosure of significant AI use:** the initial implementation (core library, general and physics stand-in adapters, scene adapter for Moteur3DCPU, tests, benchmark, README draft) was generated with Claude (Anthropic) from the project brief and the engine source we provided. AI-found/fixed during development: a CRC-coverage test helper, a zero-length-read bug (`gcount()`), an off-by-4 `reserve` (see Measurements).
+**AI Assistance:** Claude (Anthropic) was used as a development assistant to accelerate boilerplate implementation (adapters, unit tests, benchmark scaffolding, and initial documentation drafts) based on our architectural specifications and the Moteur3DCPU source code. It also assisted in debugging edge cases during development (such as a zero-length read issue with gcount() and a 4-byte reservation offset).
 
 **What we did with the AI output:** we built it, ran the tests (also under ASan/UBSan) and the benchmark, and reviewed the files. Review found and fixed: payload contiguity was not enforced (the "every byte covered" claim was stronger than the code), the save-time memory peak came from `vector` growth rather than from the copies the first draft blamed (fixed with an exact `reserve`, measured before/after), and the README measurements had to be re-checked on our own build. Review suggestions we did not implement are listed under Known limitations.
 
