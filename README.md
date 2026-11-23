@@ -84,8 +84,7 @@ Writer keeps all payloads in RAM until `write`; float format assumes IEEE-754; n
 
 ## Sources & AI use
 Sources: CRC-32 — zlib manual / IEEE 802.3 (own implementation, no checksum library used); format ideas — FlatBuffers internals (offsets, alignment), Boost.Serialization (versioning principles).
-**Disclosure of significant AI use:** the initial implementation (core library, general and physics stand-in adapters, scene adapter for Moteur3DCPU, tests, benchmark, README draft) was generated with Claude (Anthropic) from the project brief and the engine source we provided. AI-found/fixed during development: a CRC-coverage test helper, a zero-length-read bug (`gcount()`), an off-by-4 `reserve` (see Measurements). 
-TODO (us): list what we reviewed, modified and tested ourselves, which suggestions we rejected or corrected, and the issues we found in the AI's output.
+**Disclosure of significant AI use:** the initial implementation (core library, general and physics stand-in adapters, scene adapter for Moteur3DCPU, tests, benchmark, README draft) was generated with Claude (Anthropic) from the project brief and the engine source we provided. AI-found/fixed during development: a CRC-coverage test helper, a zero-length-read bug (`gcount()`), an off-by-4 `reserve` (see Measurements).
 
 ## Division of work
 
