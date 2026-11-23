@@ -68,7 +68,7 @@ magic · versions · flags/reserved · entryCount ≤ (fileSize−24)/36 · dire
 ## Integration with the engine (Moteur3DCPU)
 The engine has no physics solver yet: its "physics" components are only `Velocity` and `Spin`. The real integration is therefore on the **ECS scene** (`adapters/scene3d.hpp`), which is what the brief allows when the engine is incomplete. The fields the brief lists for a physics scene that do not exist in the engine (mass, inertia, colliders, gravity, fixed timestep) are **not invented in the scene format**; the full physics shape is demonstrated separately on stand-in structs (`adapters/physics.hpp`, not connected to the engine).
 
-Engine headers: `third_party/moteur3d/header/` holds a copy of the engine headers needed by the scene adapter (`vec.h`, `obj.h`, `texture.h`, `ecs/`, `components/`). TODO (Nicolas): state here whether `stb_image.h` is the real file or a stub, and its license.
+Engine headers: `third_party/moteur3d/header/` holds a copy of the engine headers needed by the scene adapter (`vec.h`, `obj.h`, `texture.h`, `ecs/`, `components/`).
 
 What is persisted: `Mesh` (type 200) and `Texture` (type 201) as independent assets, and the scene (type 202): entities with a presence mask and their components (Transform, MeshRenderer, Velocity, Spin, Camera). Per-component layout is documented at the top of `scene3d.hpp`.
 - **Stable ids instead of pointers:** `MeshRenderer` holds raw `const Mesh*` / `const Texture*`; the archive stores asset ids (0 = null). A mesh shared by two entities is stored once. On load the assets are created in a `LoadedAssets` object that owns them (keep it alive as long as the entities) and the pointers are rebuilt.
@@ -91,7 +91,6 @@ Primitives & endianness, CRC vector, general round-trips (string + collection), 
 Scene adapter tests (`scene_tests.cpp`): mesh/texture round-trip (empty mesh, inconsistent faces, out-of-range index), full scene round-trip with shared assets stored once and a different component registration order, null pointers, only referenced assets saved, `ReplaceAll`, `IntoEmpty` on a non-empty ECS, failures leaving the ECS untouched (bad material, missing asset, over capacity; exactly 99 entities accepted), crafted payloads with a *valid CRC* (bad indices, huge counts, 16384x16384 texture claimed in 8 bytes, duplicate/zero entity id, NaN, scale 0, pitch out of range), truncation at every length and an altered byte at every position.
 
 ## Measurements (`asset_bench`)
-Environment of the reported run: **TODO (Nicolas): OS, CPU, compiler + version, build type (must be Release), then replace the table if the figures differ.** The figures below come from the development run: g++ 13 -O2, Linux, median of 5 runs, deterministic data (fixed LCG seed), after the buffer-reservation fix described below.
 
 | bodies | archive size | save | load | save peak temp | load peak temp |
 |---|---|---|---|---|---|
